@@ -19,6 +19,7 @@ namespace Osu_XZTraining
         Stopwatch Watch = new Stopwatch();
         Stopwatch KeysWatch = new Stopwatch();
         long LastKeyMillis = 0;
+        Scoreboard TheScoreboard = new Scoreboard();
         public Form1()
         {
             InitializeComponent();
@@ -26,7 +27,26 @@ namespace Osu_XZTraining
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            if (System.IO.File.Exists("scoreboard.json"))
+            {
+                TheScoreboard = Scoreboard.FromFile("scoreboard.json");
+            }
+            else
+            {
+                TheScoreboard.Save("scoreboard.json");
+            }
+            foreach(KeyValuePair<DateTime, int> pair in TheScoreboard.Scores)
+            {
+                listBox1.Items.Add(pair.Key + " - " + "Failed! Combo: " + pair.Value);
+            }
+            if (TheScoreboard.TopScore.Key == null)
+            {
+                
+            }
+            else
+            {
+                label2.Text = "Top Score: " + TheScoreboard.TopScore.Value + " - " + DateTime.Now.Subtract(TheScoreboard.TopScore.Key).ToString() + " ago";
+            }
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -50,7 +70,13 @@ namespace Osu_XZTraining
                 else
                 {
                     MessageBox.Show("no\nTotal: " + TotalChars);
-                    listBox1.Items.Add("Failed! Combo: " + TotalChars);
+                    DateTime now = DateTime.Now;
+                    listBox1.Items.Add(now + " - " + "Failed! Combo: " + TotalChars);
+                    TheScoreboard.Scores.Add(now, TotalChars);
+                    if (TotalChars > TheScoreboard.TopScore.Value)
+                    {
+                        TheScoreboard.TopScore = new KeyValuePair<DateTime, int>(now, TotalChars);
+                    }
                     textBox1.Text = "";
                     TotalChars = 0;
                     IsNextX = true;
@@ -72,7 +98,13 @@ namespace Osu_XZTraining
                 else
                 {
                     MessageBox.Show("no\nTotal: " + TotalChars);
-                    listBox1.Items.Add("Failed! Combo: " + TotalChars);
+                    DateTime now = DateTime.Now;
+                    listBox1.Items.Add(now + " - " + "Failed! Combo: " + TotalChars);
+                    TheScoreboard.Scores.Add(now, TotalChars);
+                    if (TotalChars > TheScoreboard.TopScore.Value)
+                    {
+                        TheScoreboard.TopScore = new KeyValuePair<DateTime, int>(now, TotalChars);
+                    }
                     textBox1.Text = "";
                     TotalChars = 0;
                     IsNextX = true;
@@ -98,6 +130,7 @@ namespace Osu_XZTraining
         private void UpdateStatistics()
         {
             label1.Text = $"Statistics:\nCombo: {TotalChars}\nTime between keys: {LastKeyMillis} ms\nKeys per second: {TotalChars / (Watch.ElapsedMilliseconds/ 1000f)}";
+            label2.Text = "Top Score: " + TheScoreboard.TopScore.Value + " - " + DateTime.Now.Subtract(TheScoreboard.TopScore.Key).ToString() + " ago";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -113,6 +146,11 @@ namespace Osu_XZTraining
             Watch.Reset();
             KeysWatch.Stop();
             KeysWatch.Reset();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            TheScoreboard.Save("scoreboard.json");
         }
     }
 }
