@@ -58,6 +58,7 @@ namespace Osu_XZTraining
                     Watch.Reset();
                     KeysWatch.Stop();
                     KeysWatch.Reset();
+                    return;
                 }
             }
             else
@@ -79,6 +80,7 @@ namespace Osu_XZTraining
                     Watch.Reset();
                     KeysWatch.Stop();
                     KeysWatch.Reset();
+                    return;
                 }
             }
             TotalChars++;
